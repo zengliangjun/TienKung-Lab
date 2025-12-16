@@ -42,3 +42,10 @@ task_registry.register(
 task_registry.register(
     "run_with_sensor", TienKungEnv, TienKungRunWithSensorFlatEnvCfg(), TienKungRunWithSensorAgentCfg()
 )
+
+from legged_lab.envs.tienkung.unitree_env import UnitreeEnv
+from legged_lab.envs.tienkung.walk_g123dof_cfg import (
+    G123WalkFlatEnvCfg,
+    G123WalkAgentCfg,
+)
+task_registry.register("walk_g123dof", UnitreeEnv, G123WalkFlatEnvCfg(), G123WalkAgentCfg())

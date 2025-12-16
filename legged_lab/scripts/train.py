@@ -20,6 +20,15 @@ import argparse
 
 from isaaclab.app import AppLauncher
 
+import os.path as osp
+root = osp.join(osp.dirname(__file__), "../..")
+import sys
+if root not in sys.path:
+    sys.path.insert(0, root)
+rsl_rl_root = osp.join(root, "rsl_rl")
+if rsl_rl_root not in sys.path:
+    sys.path.insert(0, rsl_rl_root)
+
 from legged_lab.utils import task_registry
 from rsl_rl.runners import AmpOnPolicyRunner, OnPolicyRunner
 
@@ -37,6 +46,12 @@ cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
+
+args_cli.task="walk_g123dof"
+args_cli.headless=True
+args_cli.logger="tensorboard"
+args_cli.num_envs=1024
+
 # Start camera rendering
 if "sensor" in args_cli.task:
     args_cli.enable_cameras = True
