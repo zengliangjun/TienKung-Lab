@@ -2,8 +2,20 @@ import pickle
 import numpy as np
 import torch
 import argparse
-from isaaclab.utils.math import quat_mul, quat_conjugate, axis_angle_from_quat  
-from scipy.spatial.transform import Rotation 
+
+import os.path as osp
+root = osp.join(osp.dirname(__file__), "../..")
+import sys
+if root not in sys.path:
+    sys.path.insert(0, root)
+rsl_rl_root = osp.join(root, "rsl_rl")
+if rsl_rl_root not in sys.path:
+    sys.path.insert(0, rsl_rl_root)
+
+
+
+from isaaclab.utils.math import quat_mul, quat_conjugate, axis_angle_from_quat
+from scipy.spatial.transform import Rotation
 
 def convert_pkl_to_custom(input_pkl, output_txt, fps):
     dt = 1.0 / fps
@@ -18,9 +30,9 @@ def convert_pkl_to_custom(input_pkl, output_txt, fps):
     root_lin_vel = (root_pos[1:] - root_pos[:-1]) / dt
     root_rot_t = torch.tensor(root_rot, dtype=torch.float32)
 
-    q1_conj = quat_conjugate(root_rot_t[:-1])         
-    dq = quat_mul(q1_conj, root_rot_t[1:])            
-    axis_angle = axis_angle_from_quat(dq)             
+    q1_conj = quat_conjugate(root_rot_t[:-1])
+    dq = quat_mul(q1_conj, root_rot_t[1:])
+    axis_angle = axis_angle_from_quat(dq)
     root_ang_vel = axis_angle / dt
 
     dof_vel = (dof_pos[1:] - dof_pos[:-1]) / dt
@@ -29,7 +41,7 @@ def convert_pkl_to_custom(input_pkl, output_txt, fps):
     euler_angles = np.unwrap(euler_angles, axis=0)
 
     data_output = np.concatenate(
-        (root_pos[:-1], euler_angles, dof_pos[:-1],  
+        (root_pos[:-1], euler_angles, dof_pos[:-1],
          root_lin_vel, root_ang_vel, dof_vel),
         axis=1
     )

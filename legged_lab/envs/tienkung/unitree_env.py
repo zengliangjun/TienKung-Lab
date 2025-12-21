@@ -7,6 +7,8 @@ from isaaclab.managers.scene_entity_cfg import SceneEntityCfg
 from isaaclab.utils.math import quat_apply, quat_conjugate
 from scipy.spatial.transform import Rotation
 
+from legged_lab.envs.tienkung import g123dof_info
+
 class UnitreeEnv(tienkung_env.TienKungEnv):
     def __init__(
         self,
@@ -14,8 +16,6 @@ class UnitreeEnv(tienkung_env.TienKungEnv):
         headless,
     ):
         super(UnitreeEnv, self).__init__(cfg, headless)
-
-
 
     def init_buffers(self):
         self.extras = {}
@@ -53,10 +53,10 @@ class UnitreeEnv(tienkung_env.TienKungEnv):
         self.feet_cfg.resolve(self.scene)
 
         self.feet_body_ids, _ = self.robot.find_bodies(
-            name_keys=["left_ankle_roll_link", "right_ankle_roll_link"], preserve_order=True
+            name_keys=g123dof_info.feet_body_names, preserve_order=True
         )
         self.elbow_body_ids, _ = self.robot.find_bodies(
-            name_keys=["left_elbow_link", "right_elbow_link"], preserve_order=True
+            name_keys=g123dof_info.elbow_body_names, preserve_order=True
         )
 
         ##
@@ -82,7 +82,7 @@ class UnitreeEnv(tienkung_env.TienKungEnv):
             preserve_order=True,
         )
         self.ankle_joint_ids, _ = self.robot.find_joints(
-            name_keys=["left_ankle_pitch_joint", "right_ankle_pitch_joint", "left_ankle_roll_joint", "right_ankle_roll_joint"],
+            name_keys=self.cfg.mujoco_ankle_names,
             preserve_order=True,
         )
         ########################

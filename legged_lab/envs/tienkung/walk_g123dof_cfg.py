@@ -3,82 +3,32 @@ from . import walk_cfg
 from isaaclab.utils import configclass
 
 from legged_lab.assets.unitree import unitree_g123dof
+from legged_lab.envs.tienkung import g123dof_info
 
 @configclass
 class G123WalkFlatEnvCfg(walk_cfg.TienKungWalkFlatEnvCfg):
 
-    mujoco_joint_names = [
-        'left_hip_pitch_joint',
-        'left_hip_roll_joint',
-        'left_hip_yaw_joint',
-        'left_knee_joint',
-        'left_ankle_pitch_joint',
-        'left_ankle_roll_joint',
+    mujoco_joint_names = g123dof_info.mujoco_joint_names
 
-        'right_hip_pitch_joint',
-        'right_hip_roll_joint',
-        'right_hip_yaw_joint',
-        'right_knee_joint',
-        'right_ankle_pitch_joint',
-        'right_ankle_roll_joint',
+    mujoco_leftleg_names = g123dof_info.mujoco_leftleg_names
 
-        'waist_yaw_joint',
+    mujoco_rightleg_names = g123dof_info.mujoco_rightleg_names
 
-        'left_shoulder_pitch_joint',
-        'left_shoulder_roll_joint',
-        'left_shoulder_yaw_joint',
-        'left_elbow_joint',
-        'left_wrist_roll_joint',
+    mujoco_waist_names = g123dof_info.mujoco_waist_names
 
-        'right_shoulder_pitch_joint',
-        'right_shoulder_roll_joint',
-        'right_shoulder_yaw_joint',
-        'right_elbow_joint',
-        'right_wrist_roll_joint'
-    ]
+    mujoco_leftarm_names = g123dof_info.mujoco_leftarm_names
 
-    mujoco_leftleg_names = [
-        'left_hip_pitch_joint',
-        'left_hip_roll_joint',
-        'left_hip_yaw_joint',
-        'left_knee_joint',
-        'left_ankle_pitch_joint',
-        'left_ankle_roll_joint'
-    ]
+    mujoco_lefthand_names = g123dof_info.mujoco_lefthand_names
 
-    mujoco_rightleg_names = [
-        'right_hip_pitch_joint',
-        'right_hip_roll_joint',
-        'right_hip_yaw_joint',
-        'right_knee_joint',
-        'right_ankle_pitch_joint',
-        'right_ankle_roll_joint'
-    ]
-    mujoco_waist_names = [
-        'waist_pitch_joint'
-    ]
-    mujoco_leftarm_names = [
-        'left_shoulder_pitch_joint',
-        'left_shoulder_roll_joint',
-        'left_shoulder_yaw_joint',
-        'left_elbow_joint'
-    ]
-    mujoco_lefthand_names = [
-        'left_wrist_roll_joint'
-    ]
-    mujoco_rightarm_names = [
-        'right_shoulder_pitch_joint',
-        'right_shoulder_roll_joint',
-        'right_shoulder_yaw_joint',
-        'right_elbow_joint'
-    ]
-    mujoco_righthand_names = [
-        'right_wrist_roll_joint'
-    ]
+    mujoco_rightarm_names = g123dof_info.mujoco_rightarm_names
+
+    mujoco_righthand_names = g123dof_info.mujoco_righthand_names
+
+    mujoco_ankle_names = g123dof_info.mujoco_ankle_names
 
     def __post_init__(self):
         super(G123WalkFlatEnvCfg, self).__post_init__()
-        self.amp_motion_files_display = ["legged_lab/envs/tienkung/datasets/motion_visualization/g1_23dof_s4_walking2_stageii.txt"]
+        self.amp_motion_files_display = ["legged_lab/envs/tienkung/datasets/motion_visualization/g1_23dof_s1_walking1_stageii.txt"]
 
         self.scene.robot = unitree_g123dof.UNITREE_G1_23DOF_CFG
         self.reward.undesired_contacts.params["sensor_cfg"].body_names = [".*_knee_link", ".*_shoulder_roll_link", ".*_elbow_link", "pelvis"]
@@ -109,13 +59,9 @@ class G123WalkAgentCfg(walk_cfg.TienKungWalkAgentCfg):
     def __post_init__(self):
         self.save_interval = 1000
         self.amp_motion_files = [
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_walking2_stageii.txt",
             "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s1_walking1_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s1_walking2_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s1_walking3_stageii.txt",
             "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s3_walking1_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s3_walking2_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s4_walking2_stageii.txt",
+            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s5_walking2_stageii.txt"
             ]
         self.experiment_name = "g1_23dof_walk"
 

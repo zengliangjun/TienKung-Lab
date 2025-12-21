@@ -20,6 +20,15 @@ import argparse
 
 from isaaclab.app import AppLauncher
 
+import os.path as osp
+root = osp.join(osp.dirname(__file__), "../..")
+import sys
+if root not in sys.path:
+    sys.path.insert(0, root)
+rsl_rl_root = osp.join(root, "rsl_rl")
+if rsl_rl_root not in sys.path:
+    sys.path.insert(0, rsl_rl_root)
+
 from legged_lab.utils import task_registry
 
 # local imports
@@ -82,7 +91,7 @@ def play_amp_animation():
                 frame = frame.cpu().numpy().reshape(-1)
                 all_frames.append(frame)
             frame_cnt += 1
-            if frame_cnt >= (env.motion_len - 1):  
+            if frame_cnt >= (env.motion_len - 1):
                 break
         break
 

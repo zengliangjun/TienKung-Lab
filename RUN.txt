@@ -1,0 +1,19 @@
+
+python legged_lab/scripts/play_pkl_animation.py  \
+   --input_file /workspace/PROJECTS/MOTIONS/data/AMASS/GMR/g1_23dof/TotalCapture/s1_walking1_stageii.pkl \
+   --input_fps 30 \
+   --output_name /workspace/PROJECTS/MOTIONS/TienKung-Lab/legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s1_walking1_stageii.txt \
+   --output_fps 50
+
+python legged_lab/scripts/play_pkl_animation.py  \
+   --input_file /workspace/PROJECTS/MOTIONS/data/AMASS/GMR/g1_23dof/TotalCapture/s3_walking1_stageii.pkl \
+   --input_fps 30 \
+   --output_name /workspace/PROJECTS/MOTIONS/TienKung-Lab/legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s3_walking1_stageii.txt \
+   --output_fps 50
+
+python legged_lab/scripts/play_pkl_animation.py  \
+   --input_file /workspace/PROJECTS/MOTIONS/data/AMASS/GMR/g1_23dof/TotalCapture/s5_walking2_stageii.pkl \
+   --input_fps 30 \
+   --output_name /workspace/PROJECTS/MOTIONS/TienKung-Lab/legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s5_walking2_stageii.txt \
+   --output_fps 50
+
