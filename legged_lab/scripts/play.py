@@ -22,6 +22,15 @@ import os
 import torch
 from isaaclab.app import AppLauncher
 
+import os.path as osp
+root = osp.join(osp.dirname(__file__), "../..")
+import sys
+if root not in sys.path:
+    sys.path.insert(0, root)
+rsl_rl_root = osp.join(root, "rsl_rl")
+if rsl_rl_root not in sys.path:
+    sys.path.insert(0, rsl_rl_root)
+
 from legged_lab.utils import task_registry
 from rsl_rl.runners import AmpOnPolicyRunner, OnPolicyRunner
 

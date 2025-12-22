@@ -47,10 +47,6 @@ cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
-args_cli.task="walk_g123dof"
-args_cli.headless=True
-args_cli.logger="tensorboard"
-args_cli.num_envs=1024
 
 # Start camera rendering
 if "sensor" in args_cli.task:
