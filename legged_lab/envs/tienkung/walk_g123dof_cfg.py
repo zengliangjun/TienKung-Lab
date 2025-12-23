@@ -66,3 +66,12 @@ class G123WalkAgentCfg(walk_cfg.TienKungWalkAgentCfg):
         self.experiment_name = "g1_23dof_walk"
 
 
+@configclass
+class G123WalkAgentCfgLafan(walk_cfg.TienKungWalkAgentCfg):
+
+    def __post_init__(self):
+        self.save_interval = 1000
+        self.amp_motion_files = [
+            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_lafan1_walk1_subject5.txt"
+            ]
+        self.experiment_name = "walk_g123dof_afan"

@@ -47,5 +47,7 @@ from legged_lab.envs.tienkung.unitree_env import UnitreeEnv
 from legged_lab.envs.tienkung.walk_g123dof_cfg import (
     G123WalkFlatEnvCfg,
     G123WalkAgentCfg,
+    G123WalkAgentCfgLafan,
 )
 task_registry.register("walk_g123dof", UnitreeEnv, G123WalkFlatEnvCfg(), G123WalkAgentCfg())
+task_registry.register("walk_g123dof_afan", UnitreeEnv, G123WalkFlatEnvCfg(), G123WalkAgentCfgLafan())
