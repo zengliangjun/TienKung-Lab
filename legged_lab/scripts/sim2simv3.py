@@ -39,8 +39,8 @@ class SimToSimCfg:
 
     class sim:
         sim_duration = 100.0
-        num_action = 20
-        num_obs_per_step = 75
+        num_action = 23
+        num_obs_per_step = 84
         actor_obs_history_length = 10
         dt = 0.005
         decimation = 4
@@ -86,7 +86,13 @@ class MujocoRunner:
         self.dof_vel = np.zeros(self.cfg.sim.num_action)
         self.action = np.zeros(self.cfg.sim.num_action)
         self.default_dof_pos = np.array(
-            [0, -0.5, 0, 1.0, -0.5, 0, 0, -0.5, 0, 1.0, -0.5, 0, 0, 0.1, 0.0, -0.3, 0, -0.1, 0.0, -0.3]
+            [
+                 -0.1000,  0.0000,  0.0000,  0.3000, -0.2000,  0.0000,
+                 -0.1000,  0.0000,  0.0000,  0.3000, -0.2000,  0.0000,
+                  0.0000,
+                  0.3000,  0.2500,  0.0000,  0.9700,  0.1500,
+                  0.3000, -0.2500,  0.0000,  0.9700, -0.1500
+            ]
         )
         self.episode_length_buf = 0
         self.gait_phase = np.zeros(2)
@@ -95,43 +101,73 @@ class MujocoRunner:
         self.phase_offset = np.array([self.cfg.robot.gait_phase_offset_l, self.cfg.robot.gait_phase_offset_r])
 
         self.sim_kps = np.array([
-            700.0000, 700.0000,  60.0000,  60.0000, 700.0000, 700.0000,  20.0000,
-            20.0000, 500.0000, 500.0000,  10.0000,  10.0000, 700.0000, 700.0000,
-            10.0000,  10.0000,  30.0000,  30.0000,  16.8000,  16.8000
+            100., 100.,
+            200.,
+            100., 100.,
+            40.,  40.,
+            100., 100.,
+            40.,  40.,
+            150., 150.,
+            40.,  40.,
+            40.,  40.,
+            40.,  40.,
+            40.,  40.,
+            40.,  40.
             ], dtype = np.float32)
 
 
         self.sim_kds = np.array([
-                10.0000, 10.0000,  3.0000,  3.0000, 10.0000, 10.0000,  1.5000,  1.5000,
-                5.0000,  5.0000,  1.0000,  1.0000, 10.0000, 10.0000,  1.0000,  1.0000,
-                2.5000,  2.5000,  1.4000,  1.4000
+            2., 2.,
+            5.,
+            2., 2.,
+            1., 1.,
+            2., 2.,
+            1., 1.,
+            4., 4.,
+            1., 1.,
+            2., 2.,
+            1., 1.,
+            2., 2.,
+            1., 1.
             ], dtype = np.float32)
 
-        self.sim_pos_limits = np.array([[-0.7110,  0.7110],
-                                        [-0.7110,  0.7110],
-                                        [-2.6640,  2.6640],
-                                        [-2.6640,  2.6640],
-                                        [-2.5460,  1.8460],
-                                        [-2.5460,  1.8460],
-                                        [-0.0787,  3.2169],
-                                        [-3.2169,  0.0787],
-                                        [-0.9360,  0.9360],
-                                        [-0.9360,  0.9360],
-                                        [-2.6640,  2.6640],
-                                        [-2.6640,  2.6640],
-                                        [ 0.1195,  2.2705],
-                                        [ 0.1195,  2.2705],
-                                        [-2.4664,  0.1174],
-                                        [-2.4664,  0.1174],
-                                        [-1.1328,  0.4364],
-                                        [-1.1328,  0.4364],
-                                        [-0.3927,  0.3927],
-                                        [-0.3927,  0.3927]], dtype = np.float32)
+        self.sim_pos_limits = np.array([[-2.2602,  2.6093],
+                                    [-2.2602,  2.6093],
+                                    [-2.3562,  2.3562],
+                                    [-0.3491,  2.7926],
+                                    [-2.7926,  0.3491],
+                                    [-2.8012,  2.3824],
+                                    [-2.8012,  2.3824],
+                                    [-2.4818,  2.4818],
+                                    [-2.4818,  2.4818],
+                                    [-1.3962,  2.0595],
+                                    [-2.0595,  1.3962],
+                                    [ 0.0611,  2.7314],
+                                    [ 0.0611,  2.7314],
+                                    [-2.3562,  2.3562],
+                                    [-2.3562,  2.3562],
+                                    [-0.8029,  0.4538],
+                                    [-0.8029,  0.4538],
+                                    [-0.8901,  1.9373],
+                                    [-0.8901,  1.9373],
+                                    [-0.2356,  0.2356],
+                                    [-0.2356,  0.2356],
+                                    [-1.7750,  1.7750],
+                                    [-1.7750,  1.7750]], dtype = np.float32)
 
         self.sim_effort_limits = np.array(
-            [180.0000, 180.0000,  52.5000,  52.5000, 300.0000, 300.0000,  52.5000,
-             52.5000, 180.0000, 180.0000,  52.5000,  52.5000, 300.0000, 300.0000,
-             52.5000,  52.5000,  60.0000,  60.0000,  30.0000,  30.0000], dtype = np.float32)
+            [ 88.,  88.,
+            88.,
+            139., 139.,
+            25.,  25.,
+            88.,  88.,
+            25.,  25.,
+            139., 139.,
+            25.,  25.,
+            35.,  35.,
+            25.,  25.,
+            35.,  35.,
+            25.,  25.], dtype = np.float32)
 
         mujoco_joint_names = []
         for joint_id in range(self.model.njnt):
@@ -140,16 +176,19 @@ class MujocoRunner:
 
         mujoco_joint_names = mujoco_joint_names[1:]
         sim_joint_names = [
-            'hip_roll_l_joint', 'hip_roll_r_joint',
-            'shoulder_pitch_l_joint', 'shoulder_pitch_r_joint',
-            'hip_pitch_l_joint', 'hip_pitch_r_joint',
-            'shoulder_roll_l_joint', 'shoulder_roll_r_joint',
-            'hip_yaw_l_joint', 'hip_yaw_r_joint',
-            'shoulder_yaw_l_joint', 'shoulder_yaw_r_joint',
-            'knee_pitch_l_joint', 'knee_pitch_r_joint',
-            'elbow_pitch_l_joint', 'elbow_pitch_r_joint',
-            'ankle_pitch_l_joint', 'ankle_pitch_r_joint',
-            'ankle_roll_l_joint', 'ankle_roll_r_joint']
+            "left_hip_pitch_joint", "right_hip_pitch_joint",
+            "waist_yaw_joint",
+            "left_hip_roll_joint", "right_hip_roll_joint",  #hip_roll
+            "left_shoulder_pitch_joint",  "right_shoulder_pitch_joint",   #shoulder_pitch
+            "left_hip_yaw_joint", "right_hip_yaw_joint",  #hip_yaw
+            "left_shoulder_roll_joint",  "right_shoulder_roll_joint",   #shoulder_roll
+            "left_knee_joint", "right_knee_joint",  #knee
+            "left_shoulder_yaw_joint", "right_shoulder_yaw_joint",    #shoulder_yaw
+            "left_ankle_pitch_joint",  "right_ankle_pitch_joint",   #ankle_pitch
+            "left_elbow_joint",  "right_elbow_joint",   #elbow
+            "left_ankle_roll_joint",  "right_ankle_roll_joint",   #ankle_roll
+            "left_wrist_roll_joint",  "right_wrist_roll_joint"   #wrist_roll
+        ]
 
         self.mujoco_to_isaac_idx = [mujoco_joint_names.index(name)  for name in sim_joint_names]
         self.isaac_to_mujoco_idx = [sim_joint_names.index(name)  for name in mujoco_joint_names]
@@ -226,7 +265,7 @@ class MujocoRunner:
 
         while self.data.time < self.cfg.sim.sim_duration:
             self.obs_history = self.get_obs()
-            self.action[:] = self.policy(torch.tensor(self.obs_history, dtype=torch.float32)).detach().numpy()[:20]
+            self.action[:] = self.policy(torch.tensor(self.obs_history, dtype=torch.float32)).detach().numpy()
             self.action = np.clip(self.action, -self.cfg.sim.clip_actions, self.cfg.sim.clip_actions)
 
             target_dof_pos = self.position_control()
@@ -340,9 +379,9 @@ if __name__ == "__main__":
     parser.add_argument("--duration", type=float, default=100.0, help="Simulation duration in seconds")
     args = parser.parse_args()
 
-    args.task = "walk"
-    args.policy = "Exported_policy/walk.pt"
-    args.model = "legged_lab/assets/tienkung2_lite/mjcf/tienkung_v2.xml"
+    args.task = "walk_g123dof"
+    args.policy = "logs/g1_23dof_walk/2025-12-21_20-05-49/exported/policy.pt"
+    args.model = "legged_lab/assets/unitree/urdf/g1_description/g1_23dof_rev_1_0.xml"
     args.duration = 100
 
 
@@ -364,7 +403,7 @@ if __name__ == "__main__":
     sim_cfg.sim.sim_duration = args.duration
 
     # Set gait parameters according to task
-    if args.task == "walk":
+    if args.task == "walk_g123dof":
         sim_cfg.robot.gait_air_ratio_l = 0.38
         sim_cfg.robot.gait_air_ratio_r = 0.38
         sim_cfg.robot.gait_phase_offset_l = 0.38
