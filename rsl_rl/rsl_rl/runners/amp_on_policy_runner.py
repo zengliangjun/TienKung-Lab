@@ -109,7 +109,7 @@ class AmpOnPolicyRunner:
         # init amp loader
         amp_data = AMPLoader(
             device,
-            time_between_frames=self.env.step_dt,
+            time_between_frames=env.unwrapped.step_dt,
             preload_transitions=True,
             num_preload_transitions=train_cfg["amp_num_preload_transitions"],
             motion_files=train_cfg["amp_motion_files"],
@@ -208,7 +208,11 @@ class AmpOnPolicyRunner:
         # start learning
         obs, extras = self.env.get_observations()
         privileged_obs = extras["observations"].get(self.privileged_obs_type, obs)
-        amp_obs = self.env.get_amp_obs_for_expert_trans()
+        if hasattr(self.env, "get_amp_obs_for_expert_trans"):
+            amp_obs = self.env.get_amp_obs_for_expert_trans()
+        else:
+            amp_obs = extras["observations"].get("amp_obs_for_expert_trans")
+
         obs, privileged_obs, amp_obs = obs.to(self.device), privileged_obs.to(self.device), amp_obs.to(self.device)
         self.train_mode()  # switch to train mode (for dropout for example)
 
@@ -245,7 +249,11 @@ class AmpOnPolicyRunner:
                     actions = self.alg.act(obs, privileged_obs, amp_obs)
                     # Step the environment
                     obs, rewards, dones, infos = self.env.step(actions.to(self.env.device))
-                    next_amp_obs = self.env.get_amp_obs_for_expert_trans()
+                    if hasattr(self.env, "get_amp_obs_for_expert_trans"):
+                        next_amp_obs = self.env.get_amp_obs_for_expert_trans()
+                    else:
+                        next_amp_obs = extras["observations"].get("amp_obs_for_expert_trans")
+
                     # Move to device
                     obs, rewards, dones, next_amp_obs = (
                         obs.to(self.device),
@@ -264,8 +272,16 @@ class AmpOnPolicyRunner:
 
                     # Account for terminal state transitions
                     next_amp_obs_with_term = torch.clone(next_amp_obs)
-                    reset_env_ids = self.env.reset_env_ids
-                    terminal_amp_states = self.env.get_amp_obs_for_expert_trans()[reset_env_ids]
+                    if hasattr(self.env, "reset_env_ids"):
+                        reset_env_ids = self.env.reset_env_ids
+                    else:
+                        reset_env_ids = self.env.unwrapped.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+
+                    if hasattr(self.env, "get_amp_obs_for_expert_trans"):
+                        terminal_amp_states = self.env.get_amp_obs_for_expert_trans()[reset_env_ids]
+                    else:
+                        terminal_amp_states = extras["observations"].get("amp_obs_for_expert_trans")[reset_env_ids]
+
                     next_amp_obs_with_term[reset_env_ids] = terminal_amp_states
 
                     rewards = self.alg.discriminator.predict_amp_reward(
