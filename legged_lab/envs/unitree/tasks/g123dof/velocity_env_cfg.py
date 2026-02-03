@@ -105,22 +105,22 @@ class EventCfg:
         func=mdp.randomize_rigid_body_mass,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="torso_link"),
-            "mass_distribution_params": (-1.0, 3.0),
-            "operation": "add",
+            "asset_cfg": SceneEntityCfg("robot"),
+            "mass_distribution_params": (0.6, 1.7),
+            "operation": "scale",
         },
     )
 
     # reset
-    base_external_force_torque = EventTerm(
-        func=mdp.apply_external_force_torque,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="torso_link"),
-            "force_range": (0.0, 0.0),
-            "torque_range": (-0.0, 0.0),
-        },
-    )
+    # base_external_force_torque = EventTerm(
+    #     func=mdp.apply_external_force_torque,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="torso_link"),
+    #         "force_range": (-0.5, 0.5),
+    #         "torque_range": (-0.3, 0.3),
+    #     },
+    # )
 
     reset_base = EventTerm(
         func=mdp.reset_root_state_uniform,
@@ -128,12 +128,12 @@ class EventCfg:
         params={
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
             "velocity_range": {
-                "x": (0.0, 0.0),
-                "y": (0.0, 0.0),
-                "z": (0.0, 0.0),
-                "roll": (0.0, 0.0),
-                "pitch": (0.0, 0.0),
-                "yaw": (0.0, 0.0),
+                "x": (-0.1, 0.1),
+                "y": (-0.1, 0.1),
+                "z": (-0.1, 0.1),
+                "roll": (-0.05, 0.05),
+                "pitch": (-0.05, 0.05),
+                "yaw": (-0.05, 0.05),
             },
         },
     )
@@ -143,7 +143,7 @@ class EventCfg:
         mode="reset",
         params={
             "position_range": (0.5, 1.5),
-            "velocity_range": (0.0, 0.0),
+            "velocity_range": (-0.2, -0.2),
         },
     )
 
@@ -152,7 +152,7 @@ class EventCfg:
         func=mdp.push_by_setting_velocity,
         mode="interval",
         interval_range_s=(5.0, 5.0),
-        params={"velocity_range": {"x": (-1.0, 1.0), "y": (-1.0, 1.0)}},
+        params={"velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}},
     )
 
 
@@ -322,17 +322,31 @@ class RewardsCfg:
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
     track_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=0.5, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_ang_vel_z_exp, weight=1.8, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+    )
+
+    rew_motion_speed = RewTerm(
+        func=mdp.reward_mismatch_speed,
+        weight=0.3,
+        params={"command_name": "base_velocity",
+                "asset_cfg": SceneEntityCfg("robot")},
+    )
+    rew_motion_hard = RewTerm(
+        func=mdp.reward_track_vel_hard,
+        weight=0.3,
+        params={"std": math.sqrt(0.25),
+                "command_name": "base_velocity",
+                "asset_cfg": SceneEntityCfg("robot")},
     )
 
     # -- base
     base_linear_velocity = RewTerm(func=mdp.lin_vel_z_l2, weight=-1.0)
     base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    energy = RewTerm(func=mdp.energy, weight=-5e-4)
+    energy = RewTerm(func=mdp.energy, weight=-1.5e-5)
 
 
-    joint_acc = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
-    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
+    joint_acc = RewTerm(func=mdp.joint_acc_l2, weight=-3e-8)
+    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-3e-4)
 
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
@@ -393,7 +407,14 @@ class RewardsCfg:
     joint_deviation_arms = RewTerm(
         func=mdp.joint_deviation_l1,
         weight=-0.2,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*_shoulder_roll_joint", ".*_shoulder_yaw_joint"])},
+        params={
+            "asset_cfg": SceneEntityCfg(
+            "robot",
+            joint_names=[
+                ".*_shoulder_roll_joint",
+                ".*_shoulder_yaw_joint",
+                ".*_wrist_roll_.*"
+                ])},
     )
     joint_deviation_legs = RewTerm(
         func=mdp.joint_deviation_l1,
@@ -439,7 +460,7 @@ class RewardsCfg:
     )
     feet_clearance = RewTerm(
         func=mdp.foot_clearance_reward,
-        weight=1.0,
+        weight=0.6,
         params={
             "std": 0.05,
             "tanh_mult": 2.0,

@@ -18,8 +18,8 @@ class G123WalkAgentCfg(RslRlOnPolicyRunnerCfg):
         class_name="ActorCritic",
         init_noise_std=1.0,
         noise_std_type="scalar",
-        actor_hidden_dims=[512, 256, 128],
-        critic_hidden_dims=[512, 256, 128],
+        actor_hidden_dims=[512, 512, 256],
+        critic_hidden_dims=[512, 512, 256],
         activation="elu",
     )
     algorithm = RslRlPpoAlgorithmCfg(
@@ -55,9 +55,8 @@ class G123WalkAgentCfg(RslRlOnPolicyRunnerCfg):
     # amp parameter
     amp_reward_coef = 0.3
     amp_motion_files = [
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s1_walking2_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s3_walking1_stageii.txt",
-            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1_23dof_s5_walking2_stageii.txt"
+            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1walk_120fps_back.txt",
+            "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1walk_120fps_forward.txt"
             ]
 
     amp_num_preload_transitions = 200000

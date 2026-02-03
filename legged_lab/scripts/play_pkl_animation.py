@@ -27,7 +27,7 @@ if rsl_rl_root not in sys.path:
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Replay motion from csv file and output to npz file.")
-parser.add_argument("--input_file", type=str, required=True, help="The path to the input motion csv file.")
+parser.add_argument("--input_file", type=str, required=False, help="The path to the input motion csv file.")
 parser.add_argument("--input_fps", type=int, default=30, help="The fps of the input motion.")
 parser.add_argument(
     "--frame_range",
@@ -39,14 +39,15 @@ parser.add_argument(
         " loaded."
     ),
 )
-parser.add_argument("--output_name", type=str, required=True, help="The name of the motion npz file.")
+parser.add_argument("--output_name", type=str, required=False, help="The name of the motion npz file.")
 parser.add_argument("--output_fps", type=int, default=50, help="The fps of the output motion.")
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
 args_cli = parser.parse_args()
-
+args_cli.input_file = "/workspace/HUMANOID/IL/MimicKit/g1walk_120fps.pth"
+args_cli.output_name = "legged_lab/envs/tienkung/datasets/motion_amp_expert/g1walk_120fps_forward.txt"
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -111,7 +112,12 @@ class MotionLoader:
         self.current_idx = 0
         self.device = device
         self.frame_range = frame_range
+
+        self.fps_scale = np.arange(1.4, 0.4, -0.037).tolist()
+        self.fps_scale_index = 0
+
         self._load_motion()
+
         self._interpolate_motion()
         self._compute_velocities()
 
@@ -126,8 +132,28 @@ class MotionLoader:
                 root_pos = motion_data["root_pos"]
                 root_rot = motion_data["root_rot"]  #  [:, [3, 0, 1, 2]]  # xyzw → wxyz
                 dof_pos = motion_data["dof_pos"]
-
                 motion_numpy = np.concatenate((root_pos, root_rot, dof_pos), axis=-1)
+
+            elif self.motion_file.endswith("pth"):
+                items = torch.load(self.motion_file)
+                root_pos = items["root_pos"]
+                root_rot = items["root_rot"]  #  [:, [3, 0, 1, 2]]  # xyzw → wxyz
+                dof_pos = items["dof_pos"]
+                dof_pos = dof_pos[:, [   0, 1, 2, 3, 4, 5,
+                                         6, 7, 8, 9, 10, 11,
+                                        12,
+                                        15,16,17,18,19,
+                                        22,23,24,25,26
+                                        ]]
+
+                motion_numpy = torch.cat((root_pos, root_rot, dof_pos), axis=-1)
+
+                self.input_fps = items["fps"]
+                self.input_dt = 1.0 / self.input_fps
+
+                self.output_fps = self.input_fps * self.fps_scale[self.fps_scale_index]
+                self.output_dt = 1.0 / self.output_fps
+
         else:
             if self.motion_file.endswith("txt"):
                 motion_numpy = np.loadtxt(
@@ -146,8 +172,13 @@ class MotionLoader:
                 motion_numpy = np.concatenate((root_pos, root_rot, dof_pos), axis=-1)
                 motion_numpy = motion_numpy[self.frame_range[0] - 1: self.frame_range[1]]
 
-        motion = torch.from_numpy(motion_numpy)
-        motion = motion.to(torch.float32).to(self.device)
+        if isinstance(motion_numpy, np.ndarray):
+            motion = torch.from_numpy(motion_numpy)
+            motion = motion.to(torch.float32).to(self.device)
+        else:
+            motion = motion_numpy
+            motion = motion.to(torch.float32).to(self.device)
+
         self.motion_base_poss_input = motion[:, :3]
         self.motion_base_rots_input = motion[:, 3:7]
         self.motion_base_rots_input = self.motion_base_rots_input[:, [3, 0, 1, 2]]  # convert to wxyz
@@ -223,6 +254,43 @@ class MotionLoader:
         omega = torch.cat([omega[:1], omega, omega[-1:]], dim=0)  # repeat first and last sample
         return omega
 
+    def get_next_state_bak(
+        self,
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
+        """Gets the next state of the motion."""
+        state = (
+            self.motion_base_poss[self.current_idx : self.current_idx + 1],
+            self.motion_base_rots[self.current_idx : self.current_idx + 1],
+            self.motion_base_lin_vels[self.current_idx : self.current_idx + 1],
+            self.motion_base_ang_vels[self.current_idx : self.current_idx + 1],
+            self.motion_dof_poss[self.current_idx : self.current_idx + 1],
+            self.motion_dof_vels[self.current_idx : self.current_idx + 1],
+        )
+        self.current_idx -= 1
+        reset_flag = False
+        if self.current_idx < 0:
+            self.fps_scale_index += 1
+            if self.fps_scale_index == len(self.fps_scale):
+                reset_flag = True
+                self.fps_scale_index = 0
+
+            self.output_fps = self.input_fps * self.fps_scale[self.fps_scale_index]
+            self.output_dt = 1.0 / self.output_fps
+            ##
+            self._interpolate_motion()
+            self._compute_velocities()
+            ##
+            self.current_idx = self.output_frames - 1
+
+        return state, reset_flag
+
     def get_next_state(
         self,
     ) -> tuple[
@@ -245,8 +313,19 @@ class MotionLoader:
         self.current_idx += 1
         reset_flag = False
         if self.current_idx >= self.output_frames:
+            self.fps_scale_index += 1
+            if self.fps_scale_index == len(self.fps_scale):
+                reset_flag = True
+                self.fps_scale_index = 0
+
+            self.output_fps = self.input_fps * self.fps_scale[self.fps_scale_index]
+            self.output_dt = 1.0 / self.output_fps
+            ##
+            self._interpolate_motion()
+            self._compute_velocities()
+            ##
             self.current_idx = 0
-            reset_flag = True
+
         return state, reset_flag
 
 

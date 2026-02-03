@@ -76,3 +76,14 @@ mujoco_ankle_names = ["left_ankle_pitch_joint",
 
 elbow_body_names = ["left_elbow_link", "right_elbow_link"]
 feet_body_names = ["left_ankle_roll_link", "right_ankle_roll_link"]
+
+
+
+mujoco_arm_roll_names = [
+    'left_shoulder_roll_joint',
+    'right_shoulder_roll_joint',
+]
+mujoco_arm_pitch_names = [
+    'left_shoulder_pitch_joint',
+    'right_shoulder_pitch_joint',
+]
